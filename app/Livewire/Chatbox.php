@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Conversation;
+use App\Models\User;
 
 class Chatbox extends Component
 {
@@ -11,20 +12,26 @@ class Chatbox extends Component
     public $receiver;
     public $sender;
     public $message;
-    public $receiverRole;
+    public $receiverRole = 'superadmin';
 
-    public function mount($order)
-    {
-        $this->order = $order->id;
+   public function mount($order){
+    $this->order = $order->id;
+    $superadmin = User::where('role', 'superadmin')->first();
 
-        if (auth()->id() === $order->assigned_to) {
-            $this->receiver = $order->created_by;
-            $this->sender = $order->assigned_to;
-        } elseif (auth()->id() === $order->created_by) {
-            $this->receiver = $order->assigned_to;
-            $this->sender = $order->created_by;
-        }
+    if (!$superadmin) {
+        abort(404, 'Superadmin not found.');
     }
+
+    if (auth()->id() === $superadmin->id) {
+        $this->receiver = $order->created_by;
+        $this->sender = $superadmin->id;
+    } elseif (auth()->id() === $order->created_by) {
+        $this->receiver = $superadmin->id;
+        $this->sender = $order->created_by;
+    } else {
+        abort(403, 'Unauthorized.');
+    }
+  }
 
     public function store()
     {
@@ -51,3 +58,5 @@ class Chatbox extends Component
         ]);
     }
 }
+
+

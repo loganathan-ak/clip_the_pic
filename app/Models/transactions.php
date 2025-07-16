@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Plans;
 
-class transactions extends Model
+class Transactions extends Model
 {
 
     protected $fillable = [
@@ -15,5 +16,11 @@ class transactions extends Model
         'payment_method',
         'transaction_id',
     ];
+
+
+    // In Transaction.php
+    public function plan(){
+        return $this->belongsTo(Plans::class);
+    }
 
 }

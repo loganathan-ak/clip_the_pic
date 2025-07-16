@@ -13,14 +13,20 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-        
+            
+            $table->string('order_id')->nullable()->unique();
+
             $table->string('project_title');
             
             $table->string('request_type');
 
-            $table->string('other_request_type')->nullable();
+            $table->string('sub_services')->nullable();
+
+            $table->string('duration')->nullable();
         
             $table->text('instructions')->nullable();
+
+            $table->text('admin_notes')->nullable();
 
             $table->string('colors')->nullable();
         
@@ -44,9 +50,11 @@ return new class extends Migration
         
             $table->foreignId('created_by');
 
-            $table->string('obeth_id');
+            $table->string('obeth_id')->nullable();
 
             $table->foreignId('assigned_to')->nullable();
+
+            $table->string('completed_at')->nullable();
         
             $table->string('status')->default('pending'); // optional default
         

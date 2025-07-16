@@ -29,13 +29,13 @@
 
             <!-- Type of Request -->
             <div class="mb-3">
-                <label class="form-label fw-semibold">Type of Request *</label>
-                <select class="form-select" disabled>
-                    @foreach(['Banner Creation', 'Image Editing', 'Background Removal', 'Flyer Design', 'Logo Design', 'Social Media Post', 'Infographics', 'Mockups', 'Brochure', 'Packaging Design', 'Business Card', 'Other'] as $type)
-                        <option value="{{ $type }}" {{ $order->request_type == $type ? 'selected' : '' }}>{{ $type }}</option>
-                    @endforeach
-                </select>
-                <input type="text" class="form-control collapse" value="{{ $order->other_request_type }}" readonly />
+                <label class="form-label fw-semibold">Service*</label>
+                <input type="text" class="form-control" value="{{ $order->request_type }}" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Sub-service*</label>
+                <input type="text" class="form-control" value="{{ $order->sub_services }}" readonly />
             </div>
 
             <!-- Instructions -->
@@ -62,71 +62,44 @@
                 </div>
             </div>
 
-            <!-- Software -->
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Software to Use</label>
-                <select class="form-select" disabled>
-                    <option value="Adobe Photoshop" {{ $order->software == 'Adobe Photoshop' ? 'selected' : '' }}>Adobe Photoshop</option>
-                    <option value="Adobe Illustrator" {{ $order->software == 'Adobe Illustrator' ? 'selected' : '' }}>Adobe Illustrator</option>
-                    <option value="Canva" {{ $order->software == 'Canva' ? 'selected' : '' }}>Canva</option>
-                    <option value="Figma" {{ $order->software == 'Figma' ? 'selected' : '' }}>Figma</option>
-                    <option value="Other" {{ $order->software == 'Other' ? 'selected' : '' }}>Other</option>
-                </select>
-                <input type="text" class="form-control collapse" value="{{ $order->other_software }}" readonly />
-            </div>
-
-            <!-- Brand Profile -->
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Select Brand Profile *</label>
-                <select class="form-select" disabled>
-                    @foreach($brands as $brand)
-                        <option value="{{ $brand->id }}" {{ $order->brands_profile_id == $brand->id ? 'selected' : '' }}>{{ $brand->brand_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
             <!-- Output Format -->
             @php $selectedFormats = json_decode($order->formats, true) ?? []; @endphp
             <div class="mb-3">
                 <label class="form-label fw-semibold">Output Format</label><br>
-                @foreach(['PDF', 'AI', 'EPS', 'PNG', 'JPG', 'PSD'] as $format)
+                {{-- @foreach(['PDF', 'AI', 'EPS', 'PNG', 'JPG', 'PSD'] as $format)
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" value="{{ $format }}" {{ in_array($format, $selectedFormats) ? 'checked' : '' }} disabled>
                         <label class="form-check-label">{{ $format }}</label>
                     </div>
-                @endforeach
-            </div>
+                @endforeach --}}
+                <input class="form-check-input" type="checkbox" value="{{ $order->formats->file_type ?? '' }}" {{ $order->formats ? 'checked' : '' }} disabled>
+                <label class="form-check-label">{{ $order->formats->file_type ?? 'N/A' }}</label>
 
-            <!-- Pre-approve -->
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Pre-approve Up To (₹)</label>
-                <input type="number" class="form-control" value="{{ $order->pre_approve }}" readonly>
             </div>
 
             <!-- Reference Files -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">Uploaded Reference Files</label>
+            
                 @if($order->reference_files)
                     <ul class="list-unstyled mt-2">
-                        @foreach(json_decode($order->reference_files) as $file)
-                            <li><a href="{{ asset('storage/' . $file->path) }}" target="_blank" class="text-primary">{{ $file->original_name }}</a></li>
+                        {{-- Assuming $order->reference_files is cast to 'array' in your Order model,
+                             or if it's a JSON string of objects, then json_decode is needed.
+                             Let's stick to the json_decode approach to be safe,
+                             and then access the 'path' property as discussed before. --}}
+                        @foreach(json_decode($order->reference_files) as $fileObject)
+                            <li>
+                                <a href="{{ asset('storage/' . $fileObject->path) }}" target="_blank" class="text-primary">
+                                    {{-- Use $fileObject->original_name if available and you want to show that,
+                                         otherwise basename($fileObject->path) is fine --}}
+                                    {{ $fileObject->original_name ?? basename($fileObject->path) }}
+                                </a>
+                            </li>
                         @endforeach
                     </ul>
                 @else
-                    <p>No files uploaded.</p>
+                    <p class="text-sm text-gray-500 italic">No reference files uploaded.</p>
                 @endif
-            </div>
-
-            <!-- Rush Request -->
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" {{ $order->rush ? 'checked' : '' }} disabled>
-                <label class="form-check-label fw-semibold">Mark as Rush Request</label>
-            </div>
-
-            <!-- Requested By -->
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Requested By</label>
-                <input type="text" class="form-control" value="{{ $subscribers->where('id', $order->created_by)->first()->name ?? 'N/A' }}" disabled>
             </div>
 
             <!-- Assign To -->
@@ -144,12 +117,62 @@
                 <label for="status" class="form-label fw-semibold">Status</label>
                 <select name="status" id="status" class="form-select" required>
                     <option value="">Select Status</option>
-                    @foreach(['Pending', 'In Progress', 'Completed', 'Rejected'] as $status)
+                    @foreach(['Pending', 'In Progress', 'Completed', 'Quality Checking', 'Quoted'] as $status)
                         <option value="{{ $status }}" {{ $order->status == $status ? 'selected' : '' }}>{{ $status }}</option>
                     @endforeach
                 </select>
             </div>
 
+
+            <div class="some-container">
+                @if(($creditsUsage->status ?? null) === 'approved' && isset($creditsUsage->updated_at)  && $order->status !== 'Completed')
+                    {{-- The input field that will hold the countdown value --}}
+                    <input type="text" id="countdown" name="completed_time" class="font-semibold text-red-600" readonly />
+                    {{-- Added 'readonly' because it's dynamically set by JS --}}
+            
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const durationHours = {{ $order->duration ?? 4 }};
+                            const duration = durationHours * 60 * 60; // in seconds
+            
+                            // Use updated_at from creditsUsage as the start time for the countdown
+                            // This aligns with your backend's $updatedTime logic
+                            const startTime = {{ \Carbon\Carbon::parse($creditsUsage->updated_at)->timestamp }};
+                            const endTime = startTime + duration;
+            
+                            const countdownEl = document.getElementById('countdown');
+            
+                            function updateCountdown() {
+                                const now = Math.floor(Date.now() / 1000);
+                                let remaining = endTime - now;
+            
+                                const isNegative = remaining < 0;
+                                const absRemaining = Math.abs(remaining);
+            
+                                const hrs = Math.floor(absRemaining / 3600);
+                                const mins = Math.floor((absRemaining % 3600) / 60);
+                                const secs = absRemaining % 60;
+            
+                                // Format as HH:MM:SS
+                                const formattedTime = `${isNegative ? '-' : ''}${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                                countdownEl.value = formattedTime; // Set the value of the input field
+            
+                                // Change color based on remaining time
+                                countdownEl.classList.toggle("text-red-600", isNegative);
+                                countdownEl.classList.toggle("text-gray-700", !isNegative);
+            
+                                // Re-run every second
+                                setTimeout(updateCountdown, 1000);
+                            }
+            
+                            updateCountdown();
+                        });
+                    </script>
+            
+                @else
+                    <p>{{ $order->duration }} Hrs</p>
+                @endif
+            </div>
             <!-- Submit -->
             <div class="text-end">
                 <button type="submit" class="btn btn-primary px-4 py-2">Update Status</button>

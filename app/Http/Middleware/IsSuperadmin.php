@@ -27,6 +27,7 @@ class IsSuperadmin
         return abort(403, 'Access denied. Only Super admin can view this page.');
     }
 
+
     return $next($request);
     }
 }

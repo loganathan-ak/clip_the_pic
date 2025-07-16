@@ -141,7 +141,6 @@
           <strong>Pro Tips:</strong> Keep your brand's names, descriptions, logos, colors, fonts, and assets organized in a single place.
           This will help you save more time when making new requests.
         </div>
-
       </div>
 </div>
 

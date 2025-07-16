@@ -22,11 +22,16 @@ class IsSubscriber
         return redirect()->guest(route('login'))->with('status', 'You need to login to access for this page.');
     }
 
-    // If the user is logged in, check their role
-    if (Auth::user()->role == 'admin') {
-        return redirect()->route('admin.dashboard');
-    }elseif(Auth::user()->role == 'superadmin'){
+
+    $user = Auth::user();
+
+    // Redirect based on role
+    if ($user->role === 'superadmin') {
         return redirect()->route('superadmin.dashboard');
+    } elseif ($user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    } elseif ($user->role === 'qualitychecker') {
+        return redirect()->route('qc.dashboard');
     }
 
     return $next($request);

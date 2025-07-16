@@ -31,80 +31,109 @@
           <div class="col-md-12">
             <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
-                <div class="search-sort-filter" style="display: flex;">
-                  <input type="text" class="form-control" placeholder="Search...">
-                  {{-- <div class="btn-group ms-2">
-                    <button class="btn btn-outline-secondary">Sort</button>
-                    <button class="btn btn-outline-secondary">Filter</button>
-                  </div> --}}
+                <div class="search-sort-filter" style="display: flex; gap: 10px; align-items: center;">
+                  <input type="text" class="form-control" id="job_search_superadmin" placeholder="Search...">
+              
+                  <select id="status_filter_superadmin" class="form-control px-3 py-2 border rounded-md">
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Quoted">Quoted</option>
+                    <option value="Quote Approved">Quote Approved</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Quality Checking">Quality Checking</option>
+                  </select>
+              
+                  <a href="{{ route('superadmin.orders') }}" class="px-4 py-[9px] rounded-md bg-blue-500 text-white hidden" id="filter_reset">Reset</a>
                 </div>
     
 
               </div>
     
               <div class="card-body">
-                <div class="d-flex justify-content-between mb-3">
-                  <div class="status-filter">
-                    <button class="btn btn-sm btn-primary">Active</button>
-                    <button class="btn btn-sm btn-primary">Completed</button>
-                    <button class="btn btn-sm btn-primary">All</button>
-                  </div>
-           
-                  
-                  </div>
                 
                 @if(session('success'))
                   <div class="alert alert-success">{{ session('success') }}</div>
-              @endif
+                @endif
     
     
     
                 <div class="overflow-x-auto mt-6">
                   <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
-                      <thead class="bg-gray-100 text-xs font-semibold text-gray-700 uppercase">
+                      <thead class="bg-gray-100 text-xs font-semibold text-gray-700 uppercase" id="orders_table_head">
                           <tr>
+                            <th class="px-4 py-3 text-left">Job id</th>
                               <th class="px-4 py-3 text-left">Project Title</th>
-                              <th class="px-4 py-3 text-left">Request Type</th>
-                              <th class="px-4 py-3 text-left">Software</th>
+                              <th class="px-4 py-3 text-left">Service</th>
+                              {{-- <th class="px-4 py-3 text-left">Sub-Service</th> --}}
                               <th class="px-4 py-3 text-left">Created By</th>
-                              <th class="px-4 py-3 text-left">Assigned To</th>
-                              <th class="px-4 py-3 text-left">Rush</th>
+                              <th class="px-4 py-3 text-left">Duration</th>
+                              <th class="px-4 py-3 text-left">Credits</th>
+                              <th class="px-4 py-3 text-left">No.of files</th>
                               <th class="px-4 py-3 text-left">Status</th>
                               <th class="px-4 py-3 text-left">Actions</th>
                           </tr>
                       </thead>
-                      <tbody class="divide-y divide-gray-200 text-sm text-gray-800">
-                          @foreach($orders as $order)
-                              <tr>
-                                  <td class="px-4 py-2">{{ $order->project_title }}</td>
-                                  <td class="px-4 py-2">{{ $order->request_type }}</td>
-                                  <td class="px-4 py-2">{{ $order->size ?? '-' }}</td>
-                                  <td class="px-4 py-2">{{ $order->software ?? '-' }}</td>
-                                  <td class="px-4 py-2">
-                                      {{ $order->brandProfile->brand_name ?? 'N/A' }}
-                                  </td>
-                                  <td class="px-4 py-2">
-                                      @if($order->rush)
-                                          <span class="text-red-600 font-semibold">Yes</span>
-                                      @else
-                                          <span class="text-gray-500">No</span>
-                                      @endif
-                                  </td>
-                                  <td class="px-4 py-2">
-                                      <span class="text-blue-600 capitalize">{{ $order->status ?? 'pending' }}</span>
-                                  </td>
-                                  <td class="px-4 py-2 flex gap-3">
-                                      <a href="{{ route('view.order', $order->id) }}" class="text-indigo-600 hover:underline">View</a>
-                                      <a href="{{ route('edit.order', $order->id) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                  </td>
-                              </tr>
+                      <tbody class="divide-y divide-gray-200 text-sm text-gray-800" id="orders_table_body">
+                        @foreach($orders as $order)
+                          @php
+                          $statusColors = [
+                              'Pending' => 'bg-yellow-200',
+                              'Draft' => 'bg-gray-200',
+                              'Quoted' => 'bg-blue-200',
+                              'Quote Approved' => 'bg-orange-200',
+                              'In Progress' => 'bg-indigo-100',
+                              'Completed' => 'bg-green-200',
+                              'Quality Checking' => 'bg-purple-200',
+                          ];
+                      
+                          $statusTextColors = [
+                              'Pending' => 'text-yellow-800',
+                              'Draft' => 'text-gray-700',
+                              'Quoted' => 'text-blue-800',
+                              'Quote Approved' => 'bg-orange-800',
+                              'In Progress' => 'text-indigo-800',
+                              'Completed' => 'text-green-800',
+                              'Quality Checking' => 'text-purple-800',
+                          ];
+                      
+                          $status = $order->status ?? 'Pending';
+                          $rowClass = $statusColors[$status] ?? 'bg-white';
+                          $badgeTextClass = $statusTextColors[$status] ?? 'text-gray-800';
+                        @endphp
+                      
+                      <tr class="{{ $rowClass }}">
+                          <td class="px-4 py-3"><a href="{{ route('view.order', $order->id) }}" class="hover:underline">{{ $order->order_id ?? '-' }}</a></td>
+                          <td class="px-4 py-3">{{ $order->project_title ?? '-' }}</td>
+                          <td class="px-4 py-3">{{ $order->request_type ?? '-' }}</td>
+                          {{-- <td class="px-4 py-3">{{ $order->sub_services ?? '-' }}</td> --}}
+                          <td class="px-4 py-3">{{ $users->where('id', $order->created_by)->first()->name ?? '-' }}</td>
+                          <td class="px-4 py-3">{{ $order->duration ?? '-' }}Hrs</td>
+                          <td class="px-4 py-3">{{ $credits->where('order_id', $order->id)->first()->credits_used ?? '-' }}</td>
+                          @php
+                              $referenceFiles = json_decode($order->reference_files, true);
+                              $referenceCount = is_array($referenceFiles) ? count($referenceFiles) : 0;
+                          @endphp
+
+                          <td class="px-4 py-3">{{ $referenceCount }} File{{ $referenceCount !== 1 ? 's' : '' }}</td>
+                          <td class="px-4 py-3">
+                              <span class="px-2 py-1 rounded-full text-sm font-medium capitalize {{ $badgeTextClass }} bg-white border">
+                                {{ $status === "pending" ? 'New' : $status }}
+                              </span>
+                          </td>
+                          <td class="px-4 py-3 flex gap-3">
+                              <a href="{{ route('view.order', $order->id) }}" class="text-indigo-600 hover:underline">View</a>
+                              <a href="{{ route('edit.order', $order->id) }}" class="text-indigo-600 hover:underline">Edit</a>
+                          </td>
+                      </tr>
+                      
                           @endforeach
                       </tbody>
                   </table>
+                </div>
               </div>
-              
-    
-              </div>
+              <div class="px-6 py-2">{{ $orders->links() }}</div>
             </div>
           </div>
         </div>

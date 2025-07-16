@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('obeth_id')->unique();
-            $table->enum('role', ['subscriber', 'admin', 'superadmin'])->default('subscriber');
+            $table->string('mobile')->nullable();
+            $table->string('obeth_id')->unique()->nullable();
+            $table->enum('role', ['subscriber', 'admin', 'superadmin', 'qualitychecker'])->default('subscriber');
             $table->timestamp('email_verified_at')->nullable();
-            $table->integer('credits')->nullable();
+            $table->integer('credits')->default(0);
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

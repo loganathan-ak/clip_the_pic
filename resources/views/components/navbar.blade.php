@@ -57,14 +57,20 @@
                 </li>
 
 
-                <div class="card-action me-4">
-                   <a href="{{route('plans')}}"><button class="btn btn-success me-3">Buy Plan</button></a>
-                   <a href=""><button class="btn btn-danger">Art Gallery</button></a>
-                </div>
+                @auth
+                @if (auth()->user()->role === 'subscriber')
+                    <div class="card-action me-4">
+                        <a href="{{ route('plans') }}">
+                            <button class="px-6 py-2 text-lg bg-gradient-to-r rounded from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg flex items-center gap-2">Buy Plan</button>
+                        </a>
+                    </div>
+                @endif
+            @endauth
+            
 
 
                 
-                <li class="nav-item topbar-icon dropdown hidden-caret me-3">
+                {{-- <li class="nav-item topbar-icon dropdown hidden-caret me-3">
                   <a
                     class="nav-link dropdown-toggle"
                     href="#"
@@ -141,7 +147,7 @@
                       </a>
                     </li>
                   </ul>
-                </li>
+                </li> --}}
                 
 
                 <li class="nav-item topbar-user dropdown hidden-caret">
@@ -151,6 +157,28 @@
                     href="#"
                     aria-expanded="false"
                   >
+                  @php
+                  $imagepath = 'user.png'; // fallback image
+
+                  if (auth()->check()) {
+                      switch (auth()->user()->role) {
+                          case 'subscriber':
+                              $imagepath = 'blue-user.png';
+                              break;
+                          case 'admin':
+                              $imagepath = 'green-user.png';
+                              break;
+                          case 'superadmin':
+                              $imagepath = 'yellow-user.png';
+                              break;
+                          case 'qualitychecker':
+                             $imagepath = 'pink-user.png';
+                              break;
+                      }
+                  }
+              @endphp
+
+              <img src="{{ asset($imagepath) }}" alt="User Role Image" class="h-8 w-8 rounded-full"  />
                     <span class="profile-username">
                       <span class="op-7">Hi,</span>
                       <span class="fw-bold">{{Auth::user()->name}}</span>
@@ -159,7 +187,7 @@
                   <ul class="dropdown-menu dropdown-user animated fadeIn">
                     <div class="dropdown-user-scroll scrollbar-outer">
                       <li>
-                        <a class="dropdown-item" href="#">Account Setting</a>
+                        <a class="dropdown-item" href="{{route('profile')}}">Account Setting</a>
                         <div class="dropdown-divider"></div>
                     
                         <form method="POST" action="{{ route('logout') }}">

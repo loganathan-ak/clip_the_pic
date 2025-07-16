@@ -3,13 +3,13 @@
   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Obeth Graphics</title>
+    <title>Clip The Pic</title>
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport"/>
     <link rel="icon" href="assets/img/obeth.webp" type="image/x-icon"/>
 <!-- Font Awesome CDN -->
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
 <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/css/plugins.min.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/css/kaiadmin.min.css') }}" />
@@ -96,7 +96,7 @@
       color: black;
     }
 
-    #backgroundCanvas, #drawingCanvas {
+#backgroundCanvas, #drawingCanvas {
    width:-webkit-fill-available;
     height: 397px;
 }
@@ -117,7 +117,7 @@
 
 
 </style>
-
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/custom.js'])
 </head>
 <body class="bg-gray-100">
@@ -133,6 +133,6 @@
 </div>
   <x-footer />
 
-
+  @include('sweetalert::alert')
 </body>
 </html>

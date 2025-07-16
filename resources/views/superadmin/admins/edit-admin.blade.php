@@ -52,6 +52,7 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             required>
                         <option value="admin" {{ old('role', $admin->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="qualitychecker" {{ old('role', $admin->role) == 'qualitychecker' ? 'selected' : '' }}>Quality checker</option>
                         <option value="superadmin" {{ old('role', $admin->role) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
                     </select>
                     @error('role') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror

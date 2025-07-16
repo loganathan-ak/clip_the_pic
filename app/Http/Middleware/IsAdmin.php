@@ -27,6 +27,8 @@ class IsAdmin
         return abort(403, 'Access denied. Only Admin can view this page.');
     }
 
+    
+
     return $next($request);
     }
 }

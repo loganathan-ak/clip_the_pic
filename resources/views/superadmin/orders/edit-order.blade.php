@@ -27,22 +27,63 @@
                 <input type="text" class="form-control" id="title" name="title" value="{{ old('title', $order->project_title) }}" required>
             </div>
 
-            <!-- Request Type -->
-            <div class="mb-3">
-                <label for="request_type" class="form-label fw-semibold">Type of Request *</label>
-                <select class="form-select" id="request_type" name="request_type" required>
-                    <option value="">Select Type</option>
-                    @foreach(['Banner Creation', 'Image Editing', 'Background Removal', 'Flyer Design', 'Logo Design', 'Social Media Post', 'Infographics', 'Mockups', 'Brochure', 'Packaging Design', 'Business Card', 'Other'] as $type)
-                        <option value="{{ $type }}" {{ $order->request_type == $type ? 'selected' : '' }}>{{ $type }}</option>
-                    @endforeach
+        <!-- Request Type -->
+        <div class="mb-3">
+            <label for="request_type" class="form-label fw-semibold">Select Service*</label>
+
+            <div class="row">
+                <div class="col-md-6">
+                <select id="service" class="form-select" name="request_type" required>
+                    <option value="">Select Service</option>
                 </select>
-                <input type="text" name="other_request_type" id="other_request_type" class="form-control collapse input-toggle" value="{{ old('other_request_type', $order->other_request_type) }}" placeholder="Enter your request" />
+                </div>
+                <div class="col-md-6">
+                <select id="subService" class="form-select mt-2" name="sub_services" disabled>
+                    <option value="">Select Sub Service</option>
+                </select>
+                </div>
             </div>
+            <div class="mb-3">
+                    <label for="duration"><strong>Duration</strong></label>
+                    <select name="duration" id="duration" class="form-select" required>
+                        @foreach([
+                            1 => '1 Hour – 5 Additional credits per image',
+                            2 => '2 Hours – 4 Additional credits per image',
+                            4 => '4 Hours – 3 Additional credits per image',
+                            8 => '8 Hours – 2 Additional credits per image',
+                            12 => '12 Hours – 1 Additional credit per image',
+                            18 => '18 Hours – Standard Delivery time',
+                            24 => '24 Hours – 5% Discount',
+                            48 => '48 Hours – 6% Discount',
+                            72 => '72 Hours – 7% Discount',
+                            96 => '96 Hours – 8% Discount',
+                            120 => '120 Hours – 9% Discount',
+                            144 => '144 Hours – 10% Discount',
+                            168 => '168 Hours – 11% Discount',
+                            192 => '192 Hours – 12% Discount'
+                        ] as $value => $label)
+                            <option value="{{ $value }}" {{ old('duration', $order->duration) == $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+            </div>
+            
+            <div id="outputFormats" class="mt-3 flex items-center gap-3" style="display: none;">
+                <label class="mr-2"><strong>Output Formats:</strong></label>
+                <div id="outputFormatList" class="flex flex-wrap gap-2"></div>
+            </div>
+            
+        </div>
 
             <!-- Instructions (Rich Text) -->
             <div class="mb-3">
                 <label for="instructions" class="form-label"><strong>Instructions:</strong></label>
                 <textarea name="instructions" id="instructions" class="form-control" rows="6">{{ old('instructions', $order->instructions) }}</textarea>
+            </div>
+
+            <!-- Instructions (Rich Text) -->
+            <div class="mb-3">
+                <label for="admin_notes" class="form-label"><strong>Admin Notes:</strong></label>
+                <textarea name="admin_notes" id="admin_notes" class="form-control" rows="6">{{ old('admin_notes', $order->admin_notes) }}</textarea>
             </div>
 
             <!-- Color & Size -->
@@ -89,21 +130,6 @@
                 </select>
             </div>
 
-            <!-- Format & Ratio -->
-            @php
-            $selectedFormats = json_decode($order->formats, true) ?? [];
-            @endphp
-            
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Output Format</label><br>
-                @foreach(['PDF', 'AI', 'EPS', 'PNG', 'JPG', 'PSD'] as $format)
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="formats[]" value="{{ $format }}"
-                            id="format_{{ $format }}" {{ in_array($format, $selectedFormats) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="format_{{ $format }}">{{ $format }}</label>
-                    </div>
-                @endforeach
-            </div>
         
 
             <!-- Pre-approve budget -->
@@ -115,24 +141,41 @@
             <!-- Reference Files Upload -->
             <div class="mb-3">
                 <label for="reference_files" class="form-label fw-semibold">Upload Reference Files</label>
-                <input class="form-control" type="file" name="reference_files[]" id="reference_files" multiple>
+                <input class="form-control" type="file" name="reference_files[]" id="reference_files" multiple >
+            
                 @if($order->reference_files)
-                    <ul class="list-unstyled mt-2">
+                    <div class="mt-3 d-flex flex-wrap gap-3">
                         @foreach(json_decode($order->reference_files) as $file)
-                            <li><a href="{{ asset('storage/' . $file->path) }}" target="_blank" class="text-primary">{{ $file->original_name }}</a></li>
+                            @php
+                                $extension = pathinfo($file->original_name, PATHINFO_EXTENSION);
+                                $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp']);
+                            @endphp
+            
+                            @if($isImage)
+                                <div style="width: 150px; position: relative;">
+                                    <img src="{{ asset('storage/' . $file->path) }}" 
+                                         alt="{{ $file->original_name }}" 
+                                         class="img-thumbnail" 
+                                         style="max-width: 100%; max-height: 150px;">
+                                    <small class="d-block text-truncate mt-1">{{ $file->original_name }}</small>
+                                </div>
+                            @else
+                                <div style="width: 150px;">
+                                    <a href="{{ asset('storage/' . $file->path) }}" 
+                                       target="_blank" 
+                                       class="btn btn-sm btn-outline-primary w-100">
+                                        View {{ strtoupper($extension) }}
+                                    </a>
+                                    <small class="d-block text-truncate mt-1">{{ $file->original_name }}</small>
+                                </div>
+                            @endif
                         @endforeach
-                    </ul>
+                    </div>
                 @endif
             </div>
+            
 
-            <!-- Rush Request -->
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="rush" name="rush" {{ $order->rush ? 'checked' : '' }}>
-                <label class="form-check-label fw-semibold" for="rush">
-                    Mark as Rush Request
-                </label>
-                <p></p>
-            </div>
+
 
 
             <!-- Requested By -->
@@ -143,7 +186,7 @@
         </div>
 
         <!-- Assign To Admin -->
-        <div class="mb-3">
+        <div class="mb-3 hidden">
             <label for="assigned_to" class="form-label fw-semibold">Assign To</label>
             <select name="assigned_to" id="assigned_to" class="form-select">
                 <option value="">Select Admin</option>
@@ -154,6 +197,68 @@
                 @endforeach
             </select>
         </div>
+              
+              <!-- ✅ Editable Status Field -->
+            <div class="mb-3">
+                <label for="status" class="form-label fw-semibold">Status</label>
+                <select name="status" id="status" class="form-select" >
+                    <option value="">Select Status</option>
+                    @foreach(['Pending', 'In Progress', 'Completed', 'Quality Checking', 'Quoted'] as $status)
+                        <option value="{{ $status }}" {{ $order->status == $status ? 'selected' : '' }}>{{ $status }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="some-container">
+                @if(($creditsUsage->status ?? null) === 'approved' && isset($creditsUsage->updated_at)  && $order->status !== 'Completed')
+                    {{-- The input field that will hold the countdown value --}}
+                    <label>Duration : </label>
+                    <input type="text" id="countdown" name="completed_time" class="font-semibold text-red-600" readonly />
+                    {{-- Added 'readonly' because it's dynamically set by JS --}}
+            
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const durationHours = {{ $order->duration ?? 4 }};
+                            const duration = durationHours * 60 * 60; // in seconds
+            
+                            // Use updated_at from creditsUsage as the start time for the countdown
+                            // This aligns with your backend's $updatedTime logic
+                            const startTime = {{ \Carbon\Carbon::parse($creditsUsage->updated_at)->timestamp }};
+                            const endTime = startTime + duration;
+            
+                            const countdownEl = document.getElementById('countdown');
+            
+                            function updateCountdown() {
+                                const now = Math.floor(Date.now() / 1000);
+                                let remaining = endTime - now;
+            
+                                const isNegative = remaining < 0;
+                                const absRemaining = Math.abs(remaining);
+            
+                                const hrs = Math.floor(absRemaining / 3600);
+                                const mins = Math.floor((absRemaining % 3600) / 60);
+                                const secs = absRemaining % 60;
+            
+                                // Format as HH:MM:SS
+                                const formattedTime = `${isNegative ? '-' : ''}${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                                countdownEl.value = formattedTime; // Set the value of the input field
+            
+                                // Change color based on remaining time
+                                countdownEl.classList.toggle("text-red-600", isNegative);
+                                countdownEl.classList.toggle("text-gray-700", !isNegative);
+            
+                                // Re-run every second
+                                setTimeout(updateCountdown, 1000);
+                            }
+            
+                            updateCountdown();
+                        });
+                    </script>
+            
+                @else
+                    <p>{{ $order->duration }} Hrs</p>
+                @endif
+            </div>
 
             <!-- Submit -->
             <div class="text-end">
@@ -184,5 +289,114 @@
                 }
             });
         });
+
+
+
+
+/////////////////////////////////////////////
+
+    const serviceData = {
+        "Clipping Paths": {
+            "Original Background": ["JPG", "EPS", "TIFF", "PSD"],
+            "Transparent Background": ["PNG", "TIFF", "PSD"],
+            "White Background": ["JPG", "PNG", "EPS", "TIFF", "PSD"],
+            "Custom Background": ["JPG", "PNG", "EPS", "TIFF", "PSD"]
+        },
+        "Masking": {
+            "Transparent Layer or Channel Mask": ["PSD", "TIFF"],
+            "Transparent Background": ["PNG", "PSD", "TIFF"],
+            "White Background": ["PNG", "PSD", "TIFF"],
+            "Custom Background": ["PNG", "PSD", "TIFF"]
+        },
+        "Remove Background": {
+            "Transparent Background": ["PNG", "PSD", "TIFF"],
+            "White Background": ["JPEG", "PNG", "PSD", "TIFF"],
+            "Custom Background": ["JPG", "PNG", "EPS", "TIFF", "PSD"]
+        },
+        "Color Correction": {
+            "Color Correction": ["JPG", "PNG", "PSD", "TIFF", "EPS", "Layered PSD", "Layered TIFF"]
+        },
+        "Retouch": {
+            "Retouch": ["JPG", "PNG", "PSD", "TIFF", "Layered PSD", "Layered TIFF"]
+        },
+        "Vector": {
+            "Vector": ["Illustrator EPS", "Photoshop EPS", "Illustrator file (ai)"]
+        }
+    };
+
+$(document).ready(function () {
+    const $service = $('#service');
+    const $subService = $('#subService');
+    const $outputBox = $('#outputFormats');
+    const $outputList = $('#outputFormatList');
+
+    // 1. Fill Service options
+    Object.keys(serviceData).forEach(service => {
+        $service.append(new Option(service, service));
+    });
+
+    // 2. Preselect service if available
+    if (selectedService) {
+        $service.val(selectedService).trigger('change');
+    }
+
+    // 3. When Service changes, populate Sub Services
+    $service.on('change', function () {
+        const service = $(this).val();
+        $subService.empty().append('<option value="">Select Sub Service</option>').prop('disabled', true);
+        $outputBox.hide();
+        $outputList.empty();
+
+        if (service) {
+            Object.keys(serviceData[service]).forEach(sub => {
+                $subService.append(new Option(sub, sub));
+            });
+            $subService.prop('disabled', false);
+
+            // 4. Preselect sub-service after a short delay (wait for DOM update)
+            if (selectedService === service && selectedSubService) {
+                setTimeout(() => {
+                    $subService.val(selectedSubService).trigger('change');
+                }, 100);
+            }
+        }
+    });
+
+    // 5. When Sub Service changes, populate Output Formats
+    $subService.on('change', function () {
+        const service = $service.val();
+        const subService = $(this).val();
+        $outputList.empty();
+        $outputBox.hide();
+
+        if (service && subService) {
+            const formats = serviceData[service][subService];
+            formats.forEach((format, index) => {
+                const isChecked = selectedFormats.includes(format) ? 'checked' : '';
+                const checkbox = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="formats[]" value="${format}" id="format${index}" ${isChecked}>
+                        <label class="form-check-label" for="format${index}">${format}</label>
+                    </div>
+                `;
+                $outputList.append(checkbox);
+            });
+            $outputBox.show();
+        }
+    });
+
+    // Optional: trigger change on service to start everything
+    if (selectedService) {
+        $service.trigger('change');
+    }
+});
+
     </script>
+
+    <script>
+    const selectedService = @json(old('request_type', $order->request_type));
+    const selectedSubService = @json(old('sub_services', $order->sub_services));
+    const selectedFormats = @json(old('formats', $order->formats ?? []));
+</script>
+
 </x-layout>

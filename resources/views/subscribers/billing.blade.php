@@ -84,56 +84,37 @@
                 </li>
               </ul>
             </div>
-            <div class="row bills">
-       
-            <div class="billing-container">
-    <h2>Billing</h2>
-
-    <!-- Plan Details -->
-    <div class="form-group">
-      <label for="plan">Plan Details</label>
-      <select id="plan">
-        <option value="">-- Select Plan --</option>
-        <option value="basic">Basic - $9.99/month</option>
-        <option value="pro">Pro - $19.99/month</option>
-        <option value="enterprise">Enterprise - $49.99/month</option>
-      </select>
-    </div>
-
-    <!-- Billing Info -->
-    <div class="form-group">
-      <label for="name">Billing Name</label>
-      <input type="text" id="name" placeholder="Full Name">
-    </div>
-
-    <div class="form-group">
-      <label for="address">Billing Address</label>
-      <input type="text" id="address" placeholder="Street, City, Zip">
-    </div>
-
-    <!-- Payment Options -->
-    <div class="form-group">
-      <label for="payment">Payment Method</label>
-      <select id="payment">
-        <option value="">-- Select Payment Method --</option>
-        <option value="card">Credit/Debit Card</option>
-        <option value="paypal">PayPal</option>
-        <option value="upi">UPI</option>
-      </select>
-    </div>
-
-    <!-- Recurring Option -->
-    <div class="checkbox-group">
-      <input type="checkbox" id="recurring">
-      <label for="recurring">Enable Recurring Payment</label>
-    </div>
-
-    <button onclick="submitBilling()">Explore All Plans</button>
-  </div>
-
-
-
-            </div>
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Transactions</h2>
+          
+              @forelse($transactions as $transaction)
+              <div class="bg-white rounded-2xl shadow p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-1">Transaction #{{ $transaction->transaction_id }}</h3>
+                      <p class="text-sm text-gray-600">
+                          <span class="font-medium">Date:</span> {{ $transaction->created_at->format('d M Y, h:i A') }}
+                      </p>
+                      <p class="text-sm text-gray-600">
+                          <span class="font-medium">Payment Method:</span> {{ ucfirst($transaction->payment_method) }}
+                      </p>
+                  </div>
+          
+                  <div class="text-center sm:text-right">
+                      <p class="text-sm text-gray-600">
+                          <span class="font-medium">Plan:</span> {{ $transaction->plan->name ?? 'N/A' }}
+                      </p>
+                      <p class="text-sm text-gray-600">
+                          <span class="font-medium">Credits:</span> {{ $transaction->credits_purchased }}
+                      </p>
+                      <p class="text-xl font-semibold text-green-600">${{ number_format($transaction->amount_paid, 2) }}</p>
+                  </div>
+              </div>
+              @empty
+              <div class="text-center text-gray-500 mt-10">
+                  <p>No transactions found.</p>
+              </div>
+              @endforelse
+          </div>
           </div>
    </div>
 

@@ -17,7 +17,9 @@ class PaymentController extends Controller
         'plan_id' => 'required|exists:plans,id',
     ]);
 
-    // 🔄 Fetch the selected plan (assuming you have a Plan model)
+ 
+    $plan = \App\Models\Plans::findOrFail($request->plan_id);
+
     $plan = Plans::findOrFail($request->plan_id);
     session(['plan_id' => $request->plan_id]);
 
